@@ -142,7 +142,7 @@ export function PronosticosDayForm({
                         inputMode="numeric"
                         pattern="[0-9]*"
                         defaultValue={pred?.homeScore ?? ""}
-                        className="h-10 w-12 text-center text-base"
+                        className="h-11 w-14 text-center text-lg tabular-nums"
                         aria-label="Goles local"
                       />
                       <span className="text-muted-foreground">–</span>
@@ -154,7 +154,7 @@ export function PronosticosDayForm({
                         inputMode="numeric"
                         pattern="[0-9]*"
                         defaultValue={pred?.awayScore ?? ""}
-                        className="h-10 w-12 text-center text-base"
+                        className="h-11 w-14 text-center text-lg tabular-nums"
                         aria-label="Goles visitante"
                       />
                     </div>

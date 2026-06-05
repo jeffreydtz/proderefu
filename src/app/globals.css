@@ -191,6 +191,17 @@
       font-size: 16px;
     }
   }
+  /* Hide number-input spin buttons — they're ugly and clip narrow score fields
+     (a clipped "0" was rendering like a "C"). */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
   /* Headings get the editorial serif by default. */
   h1,
   h2,
