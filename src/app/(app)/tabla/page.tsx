@@ -90,7 +90,8 @@ export default async function TablaPage({
             ? "Solo puntos de la fase de grupos. "
             : "Solo puntos de eliminatorias. "}
         Exacto = {exact} pts · Resultado = {outcome} pt
-        {outcome === 1 ? "" : "s"} · Penales no cuentan
+        {outcome === 1 ? "" : "s"}
+        {scope === "group" ? "" : " · Penales no cuentan"}
       </p>
     </div>
   );
