@@ -35,7 +35,9 @@ postgres.js · **Supabase Postgres** · NextAuth v5 (passkeys/WebAuthn,
   `github.com/jeffreydtz/proderefu` → **pushing to `main` auto-deploys production.**
 - **Supabase:** project ref `glfcpxcnbyzvaofxdsjk` (region `aws-1-sa-east-1`). Schema
   applied + seeded (48 teams, 104 matches, settings row, owner invite).
-- **Admin / `OWNER_EMAIL`:** `jeffreydietz33@gmail.com` (auto-granted admin on first login).
+- **Admin / `OWNER_EMAIL`:** `jef_dietz@hotmail.com` (auto-granted admin on first login).
+  Note: the SMTP sender (`EMAIL_SERVER_USER`/`EMAIL_FROM`) is a separate Gmail
+  (`jeffreydietz33@gmail.com`) — owner identity and mail sender are independent.
 
 ### How the DB is used (important)
 
