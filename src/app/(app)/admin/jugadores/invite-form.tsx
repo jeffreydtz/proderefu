@@ -48,12 +48,13 @@ export function InviteForm() {
         <SubmitBtn />
       </form>
       {state?.ok && state.inviteUrl ? (
-        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 p-2 text-xs">
-          <code className="flex-1 truncate">{state.inviteUrl}</code>
+        <div className="flex flex-col gap-2 rounded-md border border-border bg-muted/50 p-2 text-sm sm:flex-row sm:items-center">
+          <code className="min-w-0 flex-1 truncate">{state.inviteUrl}</code>
           <Button
             type="button"
             size="sm"
             variant="outline"
+            className="min-h-11 w-full sm:w-auto"
             onClick={() => {
               navigator.clipboard.writeText(state.inviteUrl!);
               toast.success("Link copiado.");

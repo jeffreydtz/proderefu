@@ -7,7 +7,7 @@
 /* ----------------------------------------------------------------------------
    Prode Mundial 2026 — "Retro editorial deportivo" theme.
    Warm cream paper, ink black, brick red, mustard gold, pitch green.
-   Single warm theme (forced light) — no dark palette to maintain.
+   Light (cream) + dark (floodlit espresso) palettes; toggle via next-themes.
 ---------------------------------------------------------------------------- */
 @theme inline {
   --color-background: var(--background);
@@ -173,12 +173,23 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
+  /* Never let form controls fall below 16px on phones — stops iOS focus zoom. */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
   /* Headings get the editorial serif by default. */
   h1,
@@ -202,7 +213,7 @@
 
   /* Outlined pill (secondary actions / chips). */
   .pill {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-full border border-foreground px-3 py-1 text-sm font-medium;
+    @apply inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-foreground px-3 py-1 text-sm font-medium;
   }
 
   /* Big tabular display numbers (points, ratings, scores). */
@@ -235,5 +246,19 @@
       var(--grass-stripe) 56px
     );
     color: var(--grass-foreground);
+  }
+}
+
+@layer utilities {
+  /* iOS notch / home-indicator safe areas (paired with viewport-fit=cover). */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-x {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  .safe-bottom {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
 }

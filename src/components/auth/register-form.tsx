@@ -54,6 +54,7 @@ export function RegisterForm({
         <Label htmlFor="displayName">Tu nombre en la tabla</Label>
         <Input
           id="displayName"
+          autoComplete="name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           maxLength={40}

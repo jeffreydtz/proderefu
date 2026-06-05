@@ -17,7 +17,11 @@ import {
 function SaveBtn() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button
+      type="submit"
+      className="min-h-11 w-full sm:w-auto"
+      disabled={pending}
+    >
       {pending ? "Guardando…" : "Guardar puntaje"}
     </Button>
   );
@@ -48,6 +52,7 @@ export function ScoringForm({
           id="exact"
           name="exact"
           type="number"
+          inputMode="numeric"
           min={0}
           max={20}
           defaultValue={exact}
@@ -60,6 +65,7 @@ export function ScoringForm({
           id="outcome"
           name="outcome"
           type="number"
+          inputMode="numeric"
           min={0}
           max={20}
           defaultValue={outcome}
@@ -78,9 +84,10 @@ export function SyncControls({ syncEnabled }: { syncEnabled: boolean }) {
   const [pRecalc, sRecalc] = useTransition();
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid gap-2 sm:flex sm:flex-wrap">
       <Button
         variant="outline"
+        className="min-h-11 w-full sm:w-auto"
         disabled={pToggle}
         onClick={() =>
           sToggle(async () => {
@@ -94,6 +101,7 @@ export function SyncControls({ syncEnabled }: { syncEnabled: boolean }) {
       </Button>
       <Button
         variant="outline"
+        className="min-h-11 w-full sm:w-auto"
         disabled={pSync}
         onClick={() =>
           sSync(async () => {
@@ -110,6 +118,7 @@ export function SyncControls({ syncEnabled }: { syncEnabled: boolean }) {
       </Button>
       <Button
         variant="outline"
+        className="min-h-11 w-full sm:w-auto"
         disabled={pRecalc}
         onClick={() =>
           sRecalc(async () => {

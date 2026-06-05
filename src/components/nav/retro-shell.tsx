@@ -23,8 +23,8 @@ export function RetroShell({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-40 border-b border-foreground bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-3 px-4">
+      <header className="safe-top sticky top-0 z-40 border-b border-foreground bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="safe-x mx-auto flex h-14 w-full max-w-5xl items-center gap-2 md:gap-3">
           <MobileNav isAdmin={isAdmin} />
           <Link href="/tabla" aria-label="Prode Mundial 2026 — inicio">
             <BrandLogo size={26} />
@@ -38,11 +38,11 @@ export function RetroShell({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+      <main className="safe-x mx-auto w-full max-w-5xl flex-1 py-6">
         {children}
       </main>
 
-      <footer className="border-t border-border py-6 text-center">
+      <footer className="safe-x safe-bottom border-t border-border pt-6 text-center">
         <p className="eyebrow">Prode Mundial 2026 · Solo por invitación</p>
       </footer>
     </div>

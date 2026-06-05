@@ -24,8 +24,9 @@ export default async function LlavePage() {
   return (
     <div className="space-y-6">
       <SectionHeader eyebrow="Eliminatorias" title="Llave" />
+      <p className="text-sm text-muted-foreground">Deslizá para ver las rondas →</p>
       <ScrollArea className="w-full">
-        <div className="flex gap-4 pb-4">
+        <div className="flex gap-4 pb-4 pr-4">
           {rounds.map((r) => (
             <div key={r.stage} className="flex w-60 shrink-0 flex-col gap-3">
               <h3 className="eyebrow text-center">{stageLabel(r.stage)}</h3>
@@ -61,7 +62,7 @@ function BracketCard({ slot }: { slot: BracketSlot }) {
           slot.winnerTeamId != null && slot.away.team?.id === slot.winnerTeamId
         }
       />
-      <div className="mt-1.5 text-center text-[0.6rem] text-muted-foreground">
+      <div className="mt-1.5 text-center text-xs text-muted-foreground">
         {finished
           ? hasPens
             ? `Penales ${slot.homePens}-${slot.awayPens}`

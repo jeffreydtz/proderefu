@@ -19,7 +19,6 @@ export default function AppleIcon() {
           background: BRAND.red,
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={tileDataUri()} width={132} height={132} alt="" />
       </div>
     ),

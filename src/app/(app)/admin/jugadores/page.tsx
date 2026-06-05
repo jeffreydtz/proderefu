@@ -78,13 +78,15 @@ export default async function JugadoresPage() {
               ) : (
                 inviteList.map((inv) => (
                   <TableRow key={inv.id}>
-                    <TableCell className="font-medium">{inv.email}</TableCell>
+                    <TableCell className="max-w-[55vw] truncate font-medium">
+                      {inv.email}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(inv.status)}>
                         {STATUS_LABEL[inv.status] ?? inv.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                       <InviteActions id={inv.id} status={inv.status} />
                     </TableCell>
                   </TableRow>

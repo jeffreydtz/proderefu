@@ -64,7 +64,11 @@ export function PronosticosDayForm({
               className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 sm:gap-4"
             >
               <div className="flex min-w-0 items-center justify-end text-right">
-                <FlagName team={m.homeTeam} placeholder={m.homePlaceholder} />
+                <FlagName
+                  team={m.homeTeam}
+                  placeholder={m.homePlaceholder}
+                  className="min-w-0 max-w-full"
+                />
               </div>
 
               <div className="flex flex-col items-center gap-1">
@@ -83,7 +87,7 @@ export function PronosticosDayForm({
                         {formatTime(m.kickoff)}
                       </span>
                     )}
-                    <span className="inline-flex items-center gap-1 text-[0.65rem] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                       <Lock className="size-3" />
                       {pred
                         ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
@@ -99,6 +103,7 @@ export function PronosticosDayForm({
                         min={0}
                         max={99}
                         inputMode="numeric"
+                        pattern="[0-9]*"
                         defaultValue={pred?.homeScore ?? ""}
                         className="h-10 w-12 text-center text-base"
                         aria-label="Goles local"
@@ -110,12 +115,13 @@ export function PronosticosDayForm({
                         min={0}
                         max={99}
                         inputMode="numeric"
+                        pattern="[0-9]*"
                         defaultValue={pred?.awayScore ?? ""}
                         className="h-10 w-12 text-center text-base"
                         aria-label="Goles visitante"
                       />
                     </div>
-                    <span className="text-[0.65rem] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {formatTime(m.kickoff)}
                     </span>
                   </>
@@ -123,7 +129,11 @@ export function PronosticosDayForm({
               </div>
 
               <div className="flex min-w-0 items-center justify-start">
-                <FlagName team={m.awayTeam} placeholder={m.awayPlaceholder} />
+                <FlagName
+                  team={m.awayTeam}
+                  placeholder={m.awayPlaceholder}
+                  className="min-w-0 max-w-full"
+                />
               </div>
             </div>
           );

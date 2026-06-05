@@ -91,6 +91,11 @@ export function LoginForm({ emailEnabled }: { emailEnabled: boolean }) {
               <Input
                 id="email"
                 type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -100,6 +105,7 @@ export function LoginForm({ emailEnabled }: { emailEnabled: boolean }) {
             <Button
               type="submit"
               variant="outline"
+              size="lg"
               className="w-full"
               disabled={loading}
             >

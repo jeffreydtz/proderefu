@@ -62,7 +62,7 @@ export default async function PronosticosPage({
 
 function DaySelector({ days, active }: { days: MatchDay[]; active: string }) {
   return (
-    <div className="flex gap-1.5 overflow-x-auto pb-1">
+    <div className="flex gap-2 overflow-x-auto pb-1">
       {days.map((d) => {
         const [, mo, da] = d.dayKey.split("-");
         const isActive = d.dayKey === active;
@@ -70,8 +70,9 @@ function DaySelector({ days, active }: { days: MatchDay[]; active: string }) {
           <Link
             key={d.dayKey}
             href={`/pronosticos?day=${d.dayKey}`}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "shrink-0 rounded-full border px-3 py-1 text-sm font-medium transition-colors",
+              "inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors active:scale-95 active:bg-accent",
               isActive
                 ? "border-foreground bg-primary text-primary-foreground"
                 : "border-border hover:bg-accent",

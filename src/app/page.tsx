@@ -8,7 +8,7 @@ export default async function Home() {
   if (user) redirect("/tabla");
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-16 text-center">
+    <main className="safe-x flex flex-1 flex-col items-center justify-center gap-8 pt-[max(4rem,env(safe-area-inset-top))] pb-[max(4rem,env(safe-area-inset-bottom))] text-center">
       <div className="space-y-3">
         <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
           Prode privado
@@ -19,10 +19,10 @@ export default async function Home() {
           Acceso solo con invitación.
         </p>
       </div>
-      <Button asChild size="lg">
+      <Button asChild size="lg" className="w-full sm:w-auto">
         <Link href="/login">Entrar</Link>
       </Button>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         ¿No tenés acceso? Pedile el link de invitación al organizador.
       </p>
     </main>

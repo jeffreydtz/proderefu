@@ -18,6 +18,7 @@ export function InviteActions({
       <Button
         size="sm"
         variant="outline"
+        className="min-h-11"
         disabled={pending}
         onClick={() =>
           start(async () => {
@@ -41,6 +42,7 @@ export function InviteActions({
         <Button
           size="sm"
           variant="destructive"
+          className="min-h-11"
           disabled={pending}
           onClick={() =>
             start(async () => {

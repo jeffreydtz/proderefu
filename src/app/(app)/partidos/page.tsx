@@ -60,21 +60,25 @@ function StageFilter({ active }: { active: string }) {
     STAGE_ORDER.map((s) => ({ key: s, label: stageLabel(s) })),
   );
   return (
-    <div className="flex gap-1.5 overflow-x-auto pb-1">
-      {options.map((o) => (
-        <Link
-          key={o.key}
-          href={o.key === "all" ? "/partidos" : `/partidos?stage=${o.key}`}
-          className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-sm font-medium transition-colors",
-            active === o.key
-              ? "border-foreground bg-primary text-primary-foreground"
-              : "border-border hover:bg-accent",
-          )}
-        >
-          {o.label}
-        </Link>
-      ))}
+    <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+      {options.map((o) => {
+        const isActive = active === o.key;
+        return (
+          <Link
+            key={o.key}
+            href={o.key === "all" ? "/partidos" : `/partidos?stage=${o.key}`}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors active:scale-95 active:bg-accent",
+              isActive
+                ? "border-foreground bg-primary text-primary-foreground"
+                : "border-border hover:bg-accent",
+            )}
+          >
+            {o.label}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -82,11 +86,11 @@ function StageFilter({ active }: { active: string }) {
 function MatchRow({ m }: { m: MatchWithTeams }) {
   const showScore = m.status === "finished" || m.status === "live";
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 sm:gap-4">
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 transition-colors active:bg-accent sm:gap-4">
       <div className="flex min-w-0 justify-end text-right">
         <FlagName team={m.homeTeam} placeholder={m.homePlaceholder} />
       </div>
-      <div className="flex flex-col items-center gap-0.5">
+      <div className="flex flex-col items-center gap-1">
         {showScore ? (
           <ScoreBox
             home={m.homeScore}
@@ -101,11 +105,11 @@ function MatchRow({ m }: { m: MatchWithTeams }) {
           </span>
         )}
         {m.status === "live" ? (
-          <Badge variant="destructive" className="h-4 px-1.5 text-[0.6rem]">
+          <Badge variant="destructive" className="h-5 px-2 text-xs">
             EN VIVO
           </Badge>
         ) : (
-          <span className="eyebrow text-[0.6rem]">
+          <span className="eyebrow text-xs">
             {m.groupLetter ? `Grupo ${m.groupLetter}` : stageLabel(m.stage)}
           </span>
         )}

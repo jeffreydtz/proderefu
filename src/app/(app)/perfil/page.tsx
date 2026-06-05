@@ -67,11 +67,15 @@ function StatTile({
   return (
     <EditorialCard
       className={cn(
-        "flex flex-col items-center gap-1 p-4 text-center",
+        "flex min-w-0 flex-col items-center gap-1 p-3 text-center sm:p-4",
         accent && "bg-primary text-primary-foreground",
       )}
     >
-      <StatNumber value={value} size="lg" />
+      <StatNumber
+        value={value}
+        size="lg"
+        className="max-w-full break-words text-4xl leading-none tabular-nums sm:text-6xl"
+      />
       <Eyebrow className={accent ? "text-primary-foreground/80" : undefined}>
         {label}
       </Eyebrow>

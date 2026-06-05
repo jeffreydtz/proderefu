@@ -36,14 +36,14 @@ export default async function TablaPage() {
             rank={r.rank}
             tied={r.tied}
             name={r.displayName}
-            meta={`${r.exactHits} exactos · ${r.outcomeHits} resultados · ${r.scoredCount} jugados`}
+            meta={`${r.exactHits} exa · ${r.outcomeHits} res · ${r.scoredCount} jug`}
             points={r.points}
             active={r.userId === user.id}
             highlight={r.rank === 1}
           />
         ))}
       </EditorialCard>
-      <p className="eyebrow">
+      <p className="text-sm text-muted-foreground">
         Exacto = {exact} pts · Resultado = {outcome} pt
         {outcome === 1 ? "" : "s"} · Penales no cuentan
       </p>

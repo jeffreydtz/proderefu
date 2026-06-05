@@ -40,14 +40,14 @@ export function FlagName({
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-2 text-muted-foreground",
+          "inline-flex min-w-0 items-center gap-2 text-muted-foreground",
           className,
         )}
       >
-        <span className="grid size-7 place-items-center rounded border border-dashed border-muted-foreground/60 text-[0.6rem] font-semibold">
+        <span className="grid size-7 shrink-0 place-items-center rounded border border-dashed border-muted-foreground/60 text-[0.65rem] font-semibold">
           ?
         </span>
-        <span className={cn("font-medium italic", NAME[size])}>
+        <span className={cn("truncate font-medium italic", NAME[size])}>
           {placeholder ?? "Por definir"}
         </span>
       </span>
@@ -57,15 +57,15 @@ export function FlagName({
   const { emoji } = teamFlag(team.name);
   const label = team.shortName || team.name;
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
-      <span className={cn("leading-none", CREST[size])} aria-hidden>
+    <span className={cn("inline-flex min-w-0 items-center gap-2", className)}>
+      <span className={cn("shrink-0 leading-none", CREST[size])} aria-hidden>
         {emoji}
       </span>
-      <span className={cn("font-display font-semibold", NAME[size])}>
+      <span className={cn("truncate font-display font-semibold", NAME[size])}>
         {label}
       </span>
       {showCode ? (
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="shrink-0 text-xs font-medium text-muted-foreground">
           {teamCode(team.name, team.code)}
         </span>
       ) : null}

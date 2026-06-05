@@ -37,7 +37,7 @@ export function ScoreBox({
       <span className="text-muted-foreground">–</span>
       <span className={cn("stat-num tabular-nums", sizeCls)}>{cell(away)}</span>
       {hasPens ? (
-        <span className="ml-1 text-[0.65rem] font-medium text-muted-foreground">
+        <span className="ml-1 text-xs font-medium text-muted-foreground">
           ({homePens}-{awayPens} pen)
         </span>
       ) : null}

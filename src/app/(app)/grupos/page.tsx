@@ -35,7 +35,7 @@ export default async function GruposPage() {
           <GroupCard key={t.letter} table={t} />
         ))}
       </div>
-      <p className="eyebrow">
+      <p className="text-sm text-muted-foreground">
         Verde = clasifican (1° y 2°) · Dorado = mejor tercero
       </p>
     </div>
@@ -79,8 +79,8 @@ function GroupCard({ table }: { table: GroupTable }) {
                     {r.rank}
                   </span>
                 </TableCell>
-                <TableCell>
-                  <FlagName team={r.team} size="sm" />
+                <TableCell className="min-w-0 max-w-[55vw] whitespace-normal sm:max-w-none">
+                  <FlagName team={r.team} size="sm" className="flex w-full" />
                 </TableCell>
                 <TableCell className="hidden text-center sm:table-cell">
                   {r.played}

@@ -24,7 +24,6 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={tileDataUri()} width={108} height={108} alt="" />
           <div
             style={{

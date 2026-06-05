@@ -43,12 +43,15 @@ export function NavLinks({
             key={l.href}
             href={l.href}
             onClick={onNavigate}
+            aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-full px-3 text-sm font-medium transition-colors",
               active
                 ? "bg-primary text-primary-foreground"
-                : "text-foreground hover:bg-accent",
-              orientation === "vertical" && "w-full",
+                : "text-foreground hover:bg-accent active:bg-accent",
+              orientation === "vertical"
+                ? "flex min-h-11 w-full items-center py-2.5 text-base"
+                : "py-1.5",
             )}
           >
             {l.label}

@@ -71,13 +71,15 @@ export default async function AjustesPage() {
 
       <div>
         <Eyebrow>Historial de sync</Eyebrow>
-        <EditorialCard className="mt-2 overflow-hidden p-0">
+        <EditorialCard className="mt-2 p-0">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Cuándo</TableHead>
-                <TableHead>Origen</TableHead>
-                <TableHead className="text-center">Actuó</TableHead>
+                <TableHead className="hidden sm:table-cell">Origen</TableHead>
+                <TableHead className="hidden text-center sm:table-cell">
+                  Actuó
+                </TableHead>
                 <TableHead className="text-center">Actualizados</TableHead>
                 <TableHead>Error</TableHead>
               </TableRow>
@@ -98,14 +100,16 @@ export default async function AjustesPage() {
                     <TableCell className="text-xs">
                       {formatKickoff(l.ranAt)}
                     </TableCell>
-                    <TableCell className="text-xs">{l.source}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="hidden text-xs sm:table-cell">
+                      {l.source}
+                    </TableCell>
+                    <TableCell className="hidden text-center sm:table-cell">
                       {l.acted ? "sí" : "no"}
                     </TableCell>
                     <TableCell className="text-center">
                       {l.matchesUpdated}
                     </TableCell>
-                    <TableCell className="max-w-[12rem] truncate text-xs text-destructive">
+                    <TableCell className="max-w-[12rem] whitespace-normal break-words text-xs text-destructive">
                       {l.error ?? ""}
                     </TableCell>
                   </TableRow>

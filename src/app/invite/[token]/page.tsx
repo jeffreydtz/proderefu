@@ -15,7 +15,7 @@ export default async function InvitePage({
   const expired = isExpired(invite?.expiresAt);
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
+    <main className="safe-x flex flex-1 flex-col items-center justify-center px-6 pt-[max(4rem,env(safe-area-inset-top))] pb-[max(4rem,env(safe-area-inset-bottom))]">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold">Prode Mundial 2026</h1>
@@ -33,7 +33,7 @@ export default async function InvitePage({
               title="Ya registrada"
               body="Esta invitación ya fue usada. Si sos vos, simplemente iniciá sesión."
             />
-            <Button asChild className="w-full">
+            <Button asChild size="lg" className="w-full">
               <Link href="/login">Ir a iniciar sesión</Link>
             </Button>
           </div>

@@ -70,17 +70,19 @@ function MatchEditor({ m }: { m: MatchWithTeams }) {
       <span className="w-12 shrink-0 text-xs text-muted-foreground">
         {formatTime(m.kickoff)}
       </span>
-      <ManualResultForm
-        matchId={m.id}
-        home={m.homeTeam.name}
-        away={m.awayTeam.name}
-        homeScore={m.homeScore}
-        awayScore={m.awayScore}
-        homePens={m.homePens}
-        awayPens={m.awayPens}
-        knockout={m.stage !== "group"}
-        locked={m.manualLocked}
-      />
+      <div className="min-w-0 flex-1">
+        <ManualResultForm
+          matchId={m.id}
+          home={m.homeTeam.name}
+          away={m.awayTeam.name}
+          homeScore={m.homeScore}
+          awayScore={m.awayScore}
+          homePens={m.homePens}
+          awayPens={m.awayPens}
+          knockout={m.stage !== "group"}
+          locked={m.manualLocked}
+        />
+      </div>
     </div>
   );
 }

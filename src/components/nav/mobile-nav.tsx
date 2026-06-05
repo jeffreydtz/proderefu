@@ -20,7 +20,7 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="size-11 md:hidden"
           aria-label="Abrir menú"
         >
           <Menu className="size-5" />
