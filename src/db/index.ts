@@ -8,8 +8,8 @@ if (!connectionString) {
 }
 
 // Reuse a single client across hot reloads in dev / serverless warm invocations.
-// `prepare: false` is required for Neon's pooled (PgBouncer transaction mode)
-// connection string.
+// `prepare: false` is required for Supabase's pooled (Supavisor / PgBouncer
+// transaction mode, port 6543) connection string.
 const globalForDb = globalThis as unknown as {
   __pgClient?: ReturnType<typeof postgres>;
 };
