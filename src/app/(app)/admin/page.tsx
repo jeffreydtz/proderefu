@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { CalendarClock, Settings, Trophy, Users } from "lucide-react";
-import { count, desc, eq } from "drizzle-orm";
+import { CalendarClock, Pencil, Settings, Trophy, Users } from "lucide-react";
+import { and, count, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { EditorialCard } from "@/components/retro/editorial-card";
 import { Eyebrow } from "@/components/retro/eyebrow";
 import { SectionHeader } from "@/components/retro/section-header";
 import { StatNumber } from "@/components/retro/stat-number";
 import { db } from "@/db";
-import { invites, matches, syncLog } from "@/db/schema";
+import { invites, matches, predictions, syncLog } from "@/db/schema";
 import { formatKickoff } from "@/lib/format";
 
 const LINKS = [
@@ -31,16 +31,38 @@ const LINKS = [
 ];
 
 export default async function AdminDashboard() {
-  const [playersRow, finishedRow, totalRow, lastSync] = await Promise.all([
-    db.select({ c: count() }).from(invites).where(eq(invites.status, "registered")),
-    db.select({ c: count() }).from(matches).where(eq(matches.status, "finished")),
-    db.select({ c: count() }).from(matches),
-    db.query.syncLog.findMany({ orderBy: [desc(syncLog.ranAt)], limit: 1 }),
-  ]);
+  const [playersRow, finishedRow, totalRow, lastSync, pendingEditsRow] =
+    await Promise.all([
+      db.select({ c: count() }).from(invites).where(eq(invites.status, "registered")),
+      db.select({ c: count() }).from(matches).where(eq(matches.status, "finished")),
+      db.select({ c: count() }).from(matches),
+      db.query.syncLog.findMany({ orderBy: [desc(syncLog.ranAt)], limit: 1 }),
+      db
+        .select({ c: count() })
+        .from(predictions)
+        .where(
+          and(
+            isNotNull(predictions.editRequestedAt),
+            isNull(predictions.editApprovedAt),
+          ),
+        ),
+    ]);
 
   const players = Number(playersRow[0]?.c ?? 0);
   const finished = Number(finishedRow[0]?.c ?? 0);
   const total = Number(totalRow[0]?.c ?? 0);
+  const pendingEdits = Number(pendingEditsRow[0]?.c ?? 0);
+
+  const links = [
+    LINKS[0],
+    {
+      href: "/admin/ediciones",
+      title: pendingEdits ? `Ediciones (${pendingEdits})` : "Ediciones",
+      desc: "Aprobar pedidos de edición",
+      icon: Pencil,
+    },
+    ...LINKS.slice(1),
+  ];
 
   return (
     <div className="space-y-6">
@@ -65,7 +87,7 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {LINKS.map((l) => (
+        {links.map((l) => (
           <Link key={l.href} href={l.href}>
             <EditorialCard className="flex h-full items-center gap-3 p-4 transition-colors hover:bg-accent">
               <l.icon className="size-6 shrink-0 text-primary" />

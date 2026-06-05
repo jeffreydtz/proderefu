@@ -86,7 +86,10 @@ function StageFilter({ active }: { active: string }) {
 function MatchRow({ m }: { m: MatchWithTeams }) {
   const showScore = m.status === "finished" || m.status === "live";
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 transition-colors active:bg-accent sm:gap-4">
+    <Link
+      href={`/partidos/${m.id}`}
+      className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 transition-colors hover:bg-accent active:bg-accent sm:gap-4"
+    >
       <div className="flex min-w-0 justify-end text-right">
         <FlagName team={m.homeTeam} placeholder={m.homePlaceholder} />
       </div>
@@ -117,6 +120,6 @@ function MatchRow({ m }: { m: MatchWithTeams }) {
       <div className="flex min-w-0 justify-start">
         <FlagName team={m.awayTeam} placeholder={m.awayPlaceholder} />
       </div>
-    </div>
+    </Link>
   );
 }

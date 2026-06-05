@@ -1,11 +1,12 @@
 "use server";
 
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
 import { matches, predictions } from "@/db/schema";
-import { isEditable } from "@/lib/predictions-guard";
+import { isLocked } from "@/lib/format";
+import { isEditable, predictionEditable } from "@/lib/predictions-guard";
 import { getPhaseState } from "@/lib/queries/matches";
 import { requireUser } from "@/lib/session";
 
@@ -49,7 +50,7 @@ export async function savePredictionsAction(
   if (wanted.length === 0) return { ok: true, saved: 0, rejected: [] };
 
   const ids = wanted.map(([id]) => id);
-  const [rows, phase] = await Promise.all([
+  const [rows, existing, phase] = await Promise.all([
     db
       .select({
         id: matches.id,
@@ -59,46 +60,106 @@ export async function savePredictionsAction(
       })
       .from(matches)
       .where(inArray(matches.id, ids)),
+    db
+      .select({
+        id: predictions.id,
+        matchId: predictions.matchId,
+        editApprovedAt: predictions.editApprovedAt,
+      })
+      .from(predictions)
+      .where(
+        and(eq(predictions.userId, user.id), inArray(predictions.matchId, ids)),
+      ),
     getPhaseState(),
   ]);
   const byId = new Map(rows.map((r) => [r.id, r]));
+  const predByMatch = new Map(existing.map((p) => [p.matchId, p]));
 
   const now = new Date();
   const rejected: number[] = [];
-  const toUpsert: { matchId: number; home: number; away: number }[] = [];
+  const inserts: { matchId: number; home: number; away: number }[] = [];
+  const updates: { id: number; home: number; away: number }[] = [];
   for (const [id, v] of wanted) {
     const match = byId.get(id);
-    if (!match || !isEditable(match, now, phase.groupStageComplete)) {
+    const prev = predByMatch.get(id);
+    const matchEditable =
+      !!match && isEditable(match, now, phase.groupStageComplete);
+    const ok = predictionEditable({
+      matchEditable,
+      hasRow: !!prev,
+      editApprovedAt: prev?.editApprovedAt ?? null,
+    });
+    if (!ok) {
       rejected.push(id);
       continue;
     }
-    toUpsert.push({ matchId: id, home: v.home!, away: v.away! });
+    if (prev) updates.push({ id: prev.id, home: v.home!, away: v.away! });
+    else inserts.push({ matchId: id, home: v.home!, away: v.away! });
   }
 
-  if (toUpsert.length) {
+  const savedCount = inserts.length + updates.length;
+  if (savedCount) {
     await db.transaction(async (tx) => {
-      for (const p of toUpsert) {
+      for (const p of inserts) {
+        await tx.insert(predictions).values({
+          userId: user.id,
+          matchId: p.matchId,
+          homeScore: p.home,
+          awayScore: p.away,
+        });
+      }
+      // An approved edit is consumed here: clear the flags so it re-locks.
+      for (const p of updates) {
         await tx
-          .insert(predictions)
-          .values({
-            userId: user.id,
-            matchId: p.matchId,
+          .update(predictions)
+          .set({
             homeScore: p.home,
             awayScore: p.away,
+            editRequestedAt: null,
+            editApprovedAt: null,
+            updatedAt: new Date(),
           })
-          .onConflictDoUpdate({
-            target: [predictions.userId, predictions.matchId],
-            set: {
-              homeScore: p.home,
-              awayScore: p.away,
-              updatedAt: new Date(),
-            },
-          });
+          .where(eq(predictions.id, p.id));
       }
     });
   }
 
   revalidatePath("/pronosticos");
   revalidatePath("/tabla");
-  return { ok: true, saved: toUpsert.length, rejected };
+  return { ok: true, saved: savedCount, rejected };
+}
+
+/**
+ * Player requests permission to edit an already-saved prediction. Flags it for
+ * admin approval (see /admin/ediciones). Idempotent; no-op if already approved.
+ */
+export async function requestPredictionEditAction(
+  matchId: number,
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await requireUser();
+  const match = await db.query.matches.findFirst({
+    where: eq(matches.id, matchId),
+    columns: { id: true, kickoff: true, status: true },
+  });
+  if (!match) return { ok: false, error: "No existe el partido." };
+  if (isLocked(match.kickoff, match.status)) {
+    return { ok: false, error: "El partido ya empezó." };
+  }
+  const pred = await db.query.predictions.findFirst({
+    where: and(
+      eq(predictions.userId, user.id),
+      eq(predictions.matchId, matchId),
+    ),
+  });
+  if (!pred) {
+    return { ok: false, error: "Todavía no cargaste un pronóstico para editar." };
+  }
+  if (pred.editApprovedAt) return { ok: true }; // already approved
+  await db
+    .update(predictions)
+    .set({ editRequestedAt: new Date() })
+    .where(eq(predictions.id, pred.id));
+  revalidatePath("/pronosticos");
+  revalidatePath("/admin/ediciones");
+  return { ok: true };
 }

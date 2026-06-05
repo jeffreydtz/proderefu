@@ -53,11 +53,24 @@ export default async function PronosticosPage({
     days.find((d) => d.dayKey === activeDay)?.matches ?? [];
 
   const predMap = await getUserPredictionsMap(user.id);
-  const predictions: Record<number, { homeScore: number; awayScore: number }> =
-    {};
+  const predictions: Record<
+    number,
+    {
+      homeScore: number;
+      awayScore: number;
+      editRequestedAt: Date | null;
+      editApprovedAt: Date | null;
+    }
+  > = {};
   for (const m of dayMatches) {
     const p = predMap.get(m.id);
-    if (p) predictions[m.id] = { homeScore: p.homeScore, awayScore: p.awayScore };
+    if (p)
+      predictions[m.id] = {
+        homeScore: p.homeScore,
+        awayScore: p.awayScore,
+        editRequestedAt: p.editRequestedAt,
+        editApprovedAt: p.editApprovedAt,
+      };
   }
 
   const heading = days.find((d) => d.dayKey === activeDay)?.heading ?? "";

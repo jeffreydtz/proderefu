@@ -207,6 +207,11 @@ export const predictions = pgTable(
     pointsAwarded: integer("points_awarded"), // null => not scored yet
     outcomeCorrect: boolean("outcome_correct"), // denormalized for stats
     exact: boolean("exact"),
+    // Edit lifecycle: a saved prediction is fixed. Player requests an edit
+    // (edit_requested_at), admin approves (edit_approved_at => grants ONE edit),
+    // both clear on the next save.
+    editRequestedAt: timestamp("edit_requested_at", { mode: "date" }),
+    editApprovedAt: timestamp("edit_approved_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },

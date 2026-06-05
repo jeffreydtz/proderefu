@@ -143,6 +143,28 @@ may sign in** — gates live in `auth.ts` (magic-link callback) and `passkey.ts`
   (`removePlayerAction` deletes the user row → cascades predictions + passkeys → leaves
   the leaderboard, and revokes their invite). Can't remove yourself or the owner.
 
+## Predictions: fixed on save, edit by approval, match detail
+
+- **Fixed on save:** a prediction locks once saved (the row exists). `savePredictionsAction`
+  (`pronosticos/actions.ts`) inserts the first time and otherwise only updates when an
+  admin-approved edit is pending — pure helper `predictionEditable()` in
+  `predictions-guard.ts`. The day-form shows saved picks read-only with a "Pedir editar"
+  button; inputs reappear only when an edit is approved.
+- **Edit approval:** player → `requestPredictionEditAction(matchId)` sets
+  `predictions.edit_requested_at`; admin **`/admin/ediciones`** approves
+  (`approvePredictionEditAction` sets `edit_approved_at` = grants ONE edit) or rejects.
+  The next save consumes the approval (clears both timestamps → re-locks). Columns
+  `edit_requested_at` / `edit_approved_at` added by migration.
+- **Match detail** `/partidos/[id]` (`getMatchById`, `getMatchPredictions`): match data +
+  everyone's predictions. Others' picks are revealed only once the viewer has saved their
+  own pick for that match OR the match has kicked off (fair — picks are fixed). Partidos
+  rows link here.
+
+## Timezone
+
+All date/time renders through `src/lib/format.ts` (TZ = `NEXT_PUBLIC_TZ` ??
+`America/Argentina/Buenos_Aires`). `NEXT_PUBLIC_TZ` is pinned in Vercel env.
+
 ## Two-phase model (group / knockout)
 
 Automatic phases. `src/lib/phase.ts` (pure) defines `phaseOfStage(stage)` and

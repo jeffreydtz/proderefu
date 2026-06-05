@@ -13,3 +13,26 @@ export async function getUserPredictionsMap(
   });
   return new Map(rows.map((p) => [p.matchId, p]));
 }
+
+export type MatchPrediction = Prediction & {
+  user: {
+    id: string;
+    displayName: string | null;
+    name: string | null;
+    email: string | null;
+  } | null;
+};
+
+/** Every player's prediction for one match, with the player joined. */
+export async function getMatchPredictions(
+  matchId: number,
+): Promise<MatchPrediction[]> {
+  return db.query.predictions.findMany({
+    where: eq(predictions.matchId, matchId),
+    with: {
+      user: {
+        columns: { id: true, displayName: true, name: true, email: true },
+      },
+    },
+  });
+}

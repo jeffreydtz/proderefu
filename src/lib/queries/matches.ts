@@ -74,6 +74,17 @@ export async function getMatchesForStage(
   });
 }
 
+/** A single match with both teams joined, or null. */
+export async function getMatchById(
+  id: number,
+): Promise<MatchWithTeams | null> {
+  const row = await db.query.matches.findFirst({
+    where: eq(matches.id, id),
+    with: { homeTeam: true, awayTeam: true },
+  });
+  return row ?? null;
+}
+
 /**
  * Current tournament phase, derived from group-match completion. Automatic:
  * group stage until every group match is finished, then knockout.

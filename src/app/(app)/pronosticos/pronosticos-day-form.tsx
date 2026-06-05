@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useTransition } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,54 @@ import { ScoreBox } from "@/components/retro/score-box";
 import { formatTime, isLocked } from "@/lib/format";
 import { phaseOfStage } from "@/lib/phase";
 import type { MatchWithTeams } from "@/lib/queries/matches";
-import { savePredictionsAction, type SaveResult } from "./actions";
+import {
+  requestPredictionEditAction,
+  savePredictionsAction,
+  type SaveResult,
+} from "./actions";
 
-type PredMap = Record<number, { homeScore: number; awayScore: number }>;
+type PredMap = Record<
+  number,
+  {
+    homeScore: number;
+    awayScore: number;
+    editRequestedAt: Date | null;
+    editApprovedAt: Date | null;
+  }
+>;
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} size="lg" className="w-full sm:w-auto">
       {pending ? "Guardando…" : "Guardar pronósticos"}
+    </Button>
+  );
+}
+
+function EditRequestButton({ matchId }: { matchId: number }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="min-h-9"
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          const r = await requestPredictionEditAction(matchId);
+          if (r.ok) {
+            toast.success("Pedido de edición enviado al organizador.");
+            router.refresh();
+          } else {
+            toast.error(r.error ?? "No se pudo pedir la edición.");
+          }
+        })
+      }
+    >
+      Pedir editar
     </Button>
   );
 }
@@ -57,17 +97,26 @@ export function PronosticosDayForm({
     m.status === "scheduled" &&
     phaseOfStage(m.stage) !== "group" &&
     !groupStageComplete;
-  const anyOpen = matches.some(
-    (m) => !isLocked(m.kickoff, m.status) && !isPhaseLocked(m),
-  );
+  const anyOpen = matches.some((m) => {
+    const pred = predictions[m.id];
+    return (
+      !isLocked(m.kickoff, m.status) &&
+      !isPhaseLocked(m) &&
+      (!pred || !!pred.editApprovedAt)
+    );
+  });
 
   return (
     <form action={formAction} className="space-y-3">
       <EditorialCard className="divide-y divide-border">
         {matches.map((m) => {
           const phaseLocked = isPhaseLocked(m);
-          const locked = isLocked(m.kickoff, m.status) || phaseLocked;
+          const matchClosed = isLocked(m.kickoff, m.status);
           const pred = predictions[m.id];
+          const editApproved = !!pred?.editApprovedAt;
+          const editRequested = !!pred?.editRequestedAt && !editApproved;
+          const showInputs =
+            !matchClosed && !phaseLocked && (!pred || editApproved);
           return (
             <div
               key={m.id}
@@ -82,31 +131,7 @@ export function PronosticosDayForm({
               </div>
 
               <div className="flex flex-col items-center gap-1">
-                {locked ? (
-                  <>
-                    {m.status === "finished" ? (
-                      <ScoreBox
-                        home={m.homeScore}
-                        away={m.awayScore}
-                        homePens={m.homePens}
-                        awayPens={m.awayPens}
-                        size="sm"
-                      />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">
-                        {formatTime(m.kickoff)}
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-                      <Lock className="size-3" />
-                      {phaseLocked
-                        ? "Al terminar grupos"
-                        : pred
-                          ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
-                          : "Sin pronóstico"}
-                    </span>
-                  </>
-                ) : (
+                {showInputs ? (
                   <>
                     <div className="flex items-center gap-1">
                       <Input
@@ -134,8 +159,41 @@ export function PronosticosDayForm({
                       />
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {formatTime(m.kickoff)}
+                      {editApproved ? "Edición habilitada · guardá" : formatTime(m.kickoff)}
                     </span>
+                  </>
+                ) : (
+                  <>
+                    {m.status === "finished" ? (
+                      <ScoreBox
+                        home={m.homeScore}
+                        away={m.awayScore}
+                        homePens={m.homePens}
+                        awayPens={m.awayPens}
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        {formatTime(m.kickoff)}
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                      <Lock className="size-3" />
+                      {phaseLocked
+                        ? "Al terminar grupos"
+                        : pred
+                          ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
+                          : "Sin pronóstico"}
+                    </span>
+                    {!matchClosed && !phaseLocked && pred ? (
+                      editRequested ? (
+                        <span className="text-xs text-muted-foreground">
+                          Edición solicitada
+                        </span>
+                      ) : (
+                        <EditRequestButton matchId={m.id} />
+                      )
+                    ) : null}
                   </>
                 )}
               </div>

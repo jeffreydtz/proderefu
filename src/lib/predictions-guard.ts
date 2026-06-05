@@ -40,3 +40,20 @@ export function assertEditable(
     );
   }
 }
+
+/**
+ * Whether a player may save a prediction right now. A saved prediction is fixed:
+ * the first save (no existing row) is allowed; an existing row is locked unless
+ * an admin approved an edit (`editApprovedAt` set — that approval is consumed on
+ * the next save, re-locking it). `matchEditable` is the match-level gate
+ * (`isEditable`).
+ */
+export function predictionEditable(opts: {
+  matchEditable: boolean;
+  hasRow: boolean;
+  editApprovedAt: Date | null;
+}): boolean {
+  if (!opts.matchEditable) return false;
+  if (!opts.hasRow) return true; // first save
+  return opts.editApprovedAt != null; // locked unless an approved edit is pending
+}
