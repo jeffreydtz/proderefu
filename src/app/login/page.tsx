@@ -31,6 +31,12 @@ export default async function LoginPage() {
           </p>
         </div>
         <LoginForm emailEnabled={emailEnabled} />
+        <p className="text-center text-sm text-muted-foreground">
+          ¿No tenés acceso?{" "}
+          <Link href="/solicitar" className="font-medium underline">
+            Pedí una invitación
+          </Link>
+        </p>
       </div>
     </main>
   );

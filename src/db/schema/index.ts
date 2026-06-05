@@ -22,6 +22,7 @@ export const inviteStatusEnum = pgEnum("invite_status", [
   "pending",
   "registered",
   "revoked",
+  "requested", // self-service access request, awaiting admin approval
 ]);
 export const stageEnum = pgEnum("stage", [
   "group",
@@ -127,6 +128,7 @@ export const invites = pgTable("invites", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   email: text("email").notNull().unique(), // always stored lowercased
+  name: text("name"), // requester's display name (self-service requests)
   token: text("token").notNull().unique(),
   status: inviteStatusEnum("status").notNull().default("pending"),
   invitedBy: text("invited_by").references(() => users.id, {

@@ -14,13 +14,17 @@ import {
 export function RegisterForm({
   token,
   email,
+  name,
 }: {
   token: string;
   email: string;
+  name?: string | null;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [displayName, setDisplayName] = useState(email.split("@")[0]);
+  const [displayName, setDisplayName] = useState(
+    name?.trim() || email.split("@")[0],
+  );
 
   async function handleRegister() {
     if (!passkeysSupported()) {

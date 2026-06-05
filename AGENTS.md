@@ -127,6 +127,22 @@ The UI is mobile-first. When adding UI, keep:
   **cron-job.org** hitting `/api/cron/sync` (`*/5`) and `/api/cron/reminders` (hourly)
   with header `Authorization: Bearer <CRON_SECRET>`. `runSync` self-gates to match windows.
 
+## Access control (request → approve, and removing players)
+
+Invite-gated with self-service requests. The `invites` table is the allowlist
+(statuses: `requested` = self-service pending approval · `pending` = approved, can
+register · `registered` = done · `revoked` = blocked). **Only `pending`/`registered`
+may sign in** — gates live in `auth.ts` (magic-link callback) and `passkey.ts`
+(`inviteUsable` requires `pending`).
+
+- Public **`/solicitar`** → `requestAccessAction` inserts a `requested` invite and
+  emails the admin (`OWNER_EMAIL`).
+- Admin **`/admin/jugadores`**: a "Solicitudes" section (Aceptar →
+  `approveRequestAction` sets `pending` + fresh token + emails the link · Rechazar →
+  revoke); a "Jugadores" section listing registered users with **Eliminar**
+  (`removePlayerAction` deletes the user row → cascades predictions + passkeys → leaves
+  the leaderboard, and revokes their invite). Can't remove yourself or the owner.
+
 ## Two-phase model (group / knockout)
 
 Automatic phases. `src/lib/phase.ts` (pure) defines `phaseOfStage(stage)` and

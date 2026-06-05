@@ -103,7 +103,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const inv = await db.query.invites.findFirst({
           where: eq(invites.email, email),
         });
-        if (!inv || inv.status === "revoked") return false;
+        // Only approved (pending) or already-registered invites may sign in.
+        // Blocks "requested" (awaiting approval) and "revoked".
+        if (!inv || (inv.status !== "pending" && inv.status !== "registered")) {
+          return false;
+        }
         if (inv.status === "pending") {
           await db
             .update(invites)

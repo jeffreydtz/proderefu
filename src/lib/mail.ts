@@ -52,6 +52,28 @@ export async function sendInviteEmail(
   return true;
 }
 
+/** Notify the admin that someone requested access. */
+export async function sendAccessRequestEmail(
+  to: string,
+  req: { email: string; name?: string | null; url: string },
+): Promise<boolean> {
+  const t = getTransport();
+  if (!t) return false;
+  const who = req.name ? `${req.name} (${req.email})` : req.email;
+  await t.sendMail({
+    from: FROM,
+    to,
+    subject: "Nueva solicitud de acceso al Prode ⚽",
+    text: `${who} pidió unirse al prode. Aprobá o rechazá en: ${req.url}`,
+    html: shell(
+      "Nueva solicitud de acceso",
+      `<p><b>${who}</b> pidió unirse al prode.</p>
+       <p style="margin:16px 0"><a href="${req.url}" style="background:#c63e29;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:600">Revisar en el panel</a></p>`,
+    ),
+  });
+  return true;
+}
+
 export async function sendDeadlineReminder(
   to: string,
   opts: { count: number; url: string },

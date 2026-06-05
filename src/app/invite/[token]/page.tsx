@@ -27,6 +27,11 @@ export default async function InvitePage({
             title="Invitación inválida"
             body="Este link de invitación no existe o fue revocado. Pedile uno nuevo al organizador."
           />
+        ) : invite.status === "requested" ? (
+          <Alert
+            title="Solicitud pendiente"
+            body="Tu pedido de acceso está esperando aprobación del organizador. Te avisamos cuando puedas entrar."
+          />
         ) : invite.status === "registered" ? (
           <div className="space-y-4 text-center">
             <Alert
@@ -43,7 +48,7 @@ export default async function InvitePage({
             body="Este link venció. Pedile uno nuevo al organizador."
           />
         ) : (
-          <RegisterForm token={token} email={invite.email} />
+          <RegisterForm token={token} email={invite.email} name={invite.name} />
         )}
       </div>
     </main>
