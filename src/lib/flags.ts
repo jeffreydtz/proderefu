@@ -76,6 +76,9 @@ const FLAGS: Record<string, FlagInfo> = {
   jordan: { emoji: "🇯🇴", code: "JOR" },
   unitedarabemirates: { emoji: "🇦🇪", code: "UAE" },
   uae: { emoji: "🇦🇪", code: "UAE" },
+  bosniaherzegovina: { emoji: "🇧🇦", code: "BIH" },
+  haiti: { emoji: "🇭🇹", code: "HAI" },
+  curacao: { emoji: "🇨🇼", code: "CUW" },
 };
 
 function deriveCode(name: string): string {

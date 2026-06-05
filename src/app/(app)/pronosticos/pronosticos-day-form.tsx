@@ -123,9 +123,11 @@ export function PronosticosDayForm({
     <form action={formAction} className="space-y-6">
       {groups.map((g) => (
         <section key={g.key} className="space-y-2">
-          <h3 className="font-display text-lg font-semibold capitalize">
-            {g.heading}
-          </h3>
+          {groups.length > 1 ? (
+            <h3 className="font-display text-lg font-semibold capitalize">
+              {g.heading}
+            </h3>
+          ) : null}
           <EditorialCard className="divide-y divide-border">
             {g.matches.map((m) => {
               const phaseLocked = isPhaseLocked(m);

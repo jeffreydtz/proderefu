@@ -48,19 +48,35 @@ function groupByRound(all: MatchWithTeams[], phase: Phase): MatchGroup[] {
   }));
 }
 
+/** The round with the next still-open match, else the first round. */
+function defaultRoundKey(groups: MatchGroup[]): string | null {
+  const now = Date.now();
+  const open = groups.find((g) =>
+    g.matches.some(
+      (m) => m.status === "scheduled" && m.kickoff.getTime() > now,
+    ),
+  );
+  return (open ?? groups[0])?.key ?? null;
+}
+
 export default async function PronosticosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ fase?: string }>;
+  searchParams: Promise<{ fase?: string; ronda?: string }>;
 }) {
   const user = await requireUser();
-  const { fase } = await searchParams;
+  const { fase, ronda } = await searchParams;
   const [all, phase] = await Promise.all([getAllMatches(), getPhaseState()]);
 
   const activePhase: Phase =
     fase === "group" || fase === "knockout" ? fase : phase.active;
 
   const groups = groupByRound(all, activePhase);
+  const activeRound =
+    ronda && groups.some((g) => g.key === ronda)
+      ? ronda
+      : defaultRoundKey(groups);
+  const selected = groups.find((g) => g.key === activeRound) ?? null;
 
   const predMap = await getUserPredictionsMap(user.id);
   const predictions: Record<
@@ -72,17 +88,16 @@ export default async function PronosticosPage({
       editApprovedAt: Date | null;
     }
   > = {};
-  for (const g of groups)
-    for (const m of g.matches) {
-      const p = predMap.get(m.id);
-      if (p)
-        predictions[m.id] = {
-          homeScore: p.homeScore,
-          awayScore: p.awayScore,
-          editRequestedAt: p.editRequestedAt,
-          editApprovedAt: p.editApprovedAt,
-        };
-    }
+  for (const m of selected?.matches ?? []) {
+    const p = predMap.get(m.id);
+    if (p)
+      predictions[m.id] = {
+        homeScore: p.homeScore,
+        awayScore: p.awayScore,
+        editRequestedAt: p.editRequestedAt,
+        editApprovedAt: p.editApprovedAt,
+      };
+  }
 
   const knockoutLocked = activePhase === "knockout" && !phase.groupStageComplete;
 
@@ -92,10 +107,15 @@ export default async function PronosticosPage({
 
       <PhaseTabs active={activePhase} />
 
-      {groups.length === 0 ? (
+      {groups.length === 0 || !selected ? (
         <EmptyState />
       ) : (
         <>
+          <RoundTabs
+            groups={groups}
+            active={selected.key}
+            fase={activePhase}
+          />
           {knockoutLocked ? (
             <EditorialCard className="p-4 text-sm text-muted-foreground">
               Los pronósticos de eliminatorias se habilitan cuando termine la
@@ -103,7 +123,7 @@ export default async function PronosticosPage({
             </EditorialCard>
           ) : null}
           <PronosticosDayForm
-            groups={groups}
+            groups={[selected]}
             predictions={predictions}
             groupStageComplete={phase.groupStageComplete}
           />
@@ -131,6 +151,39 @@ function PhaseTabs({ active }: { active: Phase }) {
             )}
           >
             {PHASE_SHORT[p]}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function RoundTabs({
+  groups,
+  active,
+  fase,
+}: {
+  groups: MatchGroup[];
+  active: string;
+  fase: Phase;
+}) {
+  return (
+    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+      {groups.map((g) => {
+        const isActive = g.key === active;
+        return (
+          <Link
+            key={g.key}
+            href={`/pronosticos?fase=${fase}&ronda=${g.key}`}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors active:scale-95 active:bg-accent",
+              isActive
+                ? "border-foreground bg-primary text-primary-foreground"
+                : "border-border hover:bg-accent",
+            )}
+          >
+            {g.heading}
           </Link>
         );
       })}
