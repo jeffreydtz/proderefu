@@ -43,9 +43,9 @@ export default async function MatchDetailPage({
   const hasScore = match.homeScore != null && match.awayScore != null;
   const locked = isLocked(match.kickoff, match.status);
   const iPredicted = myMap.has(matchId);
-  // Reveal others once you've committed your own pick (it's then fixed), or once
-  // the match has started.
-  const reveal = iPredicted || locked;
+  // Reveal others once you've committed your own pick (it's then fixed), once the
+  // match has started, or always for the admin (the organiser sees everything).
+  const reveal = iPredicted || locked || user.role === "admin";
 
   const sorted = [...preds].sort((a, b) => {
     const pa = a.pointsAwarded ?? -1;

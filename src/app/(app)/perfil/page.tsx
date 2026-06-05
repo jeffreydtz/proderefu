@@ -1,20 +1,39 @@
+import { eq } from "drizzle-orm";
 import { EditorialCard } from "@/components/retro/editorial-card";
 import { Eyebrow } from "@/components/retro/eyebrow";
 import { SectionHeader } from "@/components/retro/section-header";
 import { StatNumber } from "@/components/retro/stat-number";
 import { Progress } from "@/components/ui/progress";
+import { db } from "@/db";
+import { users } from "@/db/schema";
 import { ordinalRank } from "@/lib/format";
 import { requireUser } from "@/lib/session";
 import { getUserStats } from "@/lib/stats-service";
 import { cn } from "@/lib/utils";
+import { EditNameForm } from "./edit-name-form";
 
 export default async function PerfilPage() {
   const user = await requireUser();
-  const s = await getUserStats(user.id);
+  const [s, me] = await Promise.all([
+    getUserStats(user.id),
+    db.query.users.findFirst({
+      where: eq(users.id, user.id),
+      columns: { displayName: true, name: true },
+    }),
+  ]);
+  const currentName = me?.displayName || me?.name || s.displayName || "";
 
   return (
     <div className="space-y-6">
       <SectionHeader eyebrow="Tu rendimiento" title={s.displayName} />
+
+      <EditorialCard className="space-y-2 p-4">
+        <Eyebrow>Tu nombre</Eyebrow>
+        <EditNameForm current={currentName} />
+        <p className="text-xs text-muted-foreground">
+          Así aparecés en la tabla y en los pronósticos.
+        </p>
+      </EditorialCard>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StatTile label="Puntos" value={s.totalPoints} accent />

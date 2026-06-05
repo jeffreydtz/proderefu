@@ -156,9 +156,10 @@ may sign in** — gates live in `auth.ts` (magic-link callback) and `passkey.ts`
   The next save consumes the approval (clears both timestamps → re-locks). Columns
   `edit_requested_at` / `edit_approved_at` added by migration.
 - **Match detail** `/partidos/[id]` (`getMatchById`, `getMatchPredictions`): match data +
-  everyone's predictions. Others' picks are revealed only once the viewer has saved their
-  own pick for that match OR the match has kicked off (fair — picks are fixed). Partidos
-  rows link here.
+  everyone's predictions. Others' picks are revealed once the viewer has saved their
+  own pick for that match OR the match has kicked off (fair — picks are fixed); **admins
+  always see all**. Partidos rows link here. Profile (`/perfil`) lets a player rename
+  themselves (`updateDisplayNameAction` → `users.display_name`, shown in the tabla).
 
 ## Timezone
 
