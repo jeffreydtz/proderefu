@@ -180,8 +180,9 @@ every group match is `finished`, then **knockout**.
 - **Per-phase leaderboard:** `getLeaderboard(scope)` with `scope: "all" | "group" |
   "knockout"` filters by stage inside the aggregate FILTERs. Tabla has tabs
   General/Grupos/Eliminatorias (`?fase=`); Perfil shows per-phase points.
-- **Pronósticos** has Grupos/Eliminatorias tabs (`?fase=`) that filter the day list and
-  default to the active phase.
+- **Pronósticos** has Grupos/Eliminatorias tabs (`?fase=`, default = active phase) and is
+  grouped by round in one chronological form: "Fecha 1/2/3" (by `matchday`) for groups,
+  by stage for knockout — see `groupByRound()` in `pronosticos/page.tsx`.
 
 ## Architecture
 

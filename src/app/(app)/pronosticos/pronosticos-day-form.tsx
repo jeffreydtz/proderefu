@@ -29,6 +29,13 @@ type PredMap = Record<
   }
 >;
 
+/** A round/matchday bucket, e.g. "Fecha 1" or "Octavos". */
+export type MatchGroup = {
+  key: string;
+  heading: string;
+  matches: MatchWithTeams[];
+};
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -65,12 +72,16 @@ function EditRequestButton({ matchId }: { matchId: number }) {
   );
 }
 
+/**
+ * One form per phase, grouped by round ("Fecha 1/2/3" for groups, the stage for
+ * knockout), each group as a separator, all in a single scroll with one Save.
+ */
 export function PronosticosDayForm({
-  matches,
+  groups,
   predictions,
   groupStageComplete,
 }: {
-  matches: MatchWithTeams[];
+  groups: MatchGroup[];
   predictions: PredMap;
   groupStageComplete: boolean;
 }) {
@@ -87,7 +98,7 @@ export function PronosticosDayForm({
       );
     if (state.rejected.length)
       toast.warning(
-        `${state.rejected.length} partido(s) ya cerrados — no se guardaron.`,
+        `${state.rejected.length} partido(s) cerrados o fijos — no se guardaron.`,
       );
     if (state.saved === 0 && state.rejected.length === 0)
       toast.info("No había cambios para guardar.");
@@ -97,7 +108,9 @@ export function PronosticosDayForm({
     m.status === "scheduled" &&
     phaseOfStage(m.stage) !== "group" &&
     !groupStageComplete;
-  const anyOpen = matches.some((m) => {
+
+  const allMatches = groups.flatMap((g) => g.matches);
+  const anyOpen = allMatches.some((m) => {
     const pred = predictions[m.id];
     return (
       !isLocked(m.kickoff, m.status) &&
@@ -107,116 +120,125 @@ export function PronosticosDayForm({
   });
 
   return (
-    <form action={formAction} className="space-y-3">
-      <EditorialCard className="divide-y divide-border">
-        {matches.map((m) => {
-          const phaseLocked = isPhaseLocked(m);
-          const matchClosed = isLocked(m.kickoff, m.status);
-          const pred = predictions[m.id];
-          const editApproved = !!pred?.editApprovedAt;
-          const editRequested = !!pred?.editRequestedAt && !editApproved;
-          const showInputs =
-            !matchClosed && !phaseLocked && (!pred || editApproved);
-          return (
-            <div
-              key={m.id}
-              className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 sm:gap-4"
-            >
-              <div className="flex min-w-0 items-center justify-end text-right">
-                <FlagName
-                  team={m.homeTeam}
-                  placeholder={m.homePlaceholder}
-                  className="min-w-0 max-w-full"
-                />
-              </div>
+    <form action={formAction} className="space-y-6">
+      {groups.map((g) => (
+        <section key={g.key} className="space-y-2">
+          <h3 className="font-display text-lg font-semibold capitalize">
+            {g.heading}
+          </h3>
+          <EditorialCard className="divide-y divide-border">
+            {g.matches.map((m) => {
+              const phaseLocked = isPhaseLocked(m);
+              const matchClosed = isLocked(m.kickoff, m.status);
+              const pred = predictions[m.id];
+              const editApproved = !!pred?.editApprovedAt;
+              const editRequested = !!pred?.editRequestedAt && !editApproved;
+              const showInputs =
+                !matchClosed && !phaseLocked && (!pred || editApproved);
+              return (
+                <div
+                  key={m.id}
+                  className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 p-3 sm:gap-4"
+                >
+                  <div className="flex min-w-0 items-center justify-end text-right">
+                    <FlagName
+                      team={m.homeTeam}
+                      placeholder={m.homePlaceholder}
+                      className="min-w-0 max-w-full"
+                    />
+                  </div>
 
-              <div className="flex flex-col items-center gap-1">
-                {showInputs ? (
-                  <>
-                    <div className="flex items-center gap-1">
-                      <Input
-                        name={`m_${m.id}_home`}
-                        type="number"
-                        min={0}
-                        max={99}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        defaultValue={pred?.homeScore ?? ""}
-                        className="h-11 w-14 text-center text-lg tabular-nums"
-                        aria-label="Goles local"
-                      />
-                      <span className="text-muted-foreground">–</span>
-                      <Input
-                        name={`m_${m.id}_away`}
-                        type="number"
-                        min={0}
-                        max={99}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        defaultValue={pred?.awayScore ?? ""}
-                        className="h-11 w-14 text-center text-lg tabular-nums"
-                        aria-label="Goles visitante"
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {editApproved ? "Edición habilitada · guardá" : formatTime(m.kickoff)}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    {m.status === "finished" ? (
-                      <ScoreBox
-                        home={m.homeScore}
-                        away={m.awayScore}
-                        homePens={m.homePens}
-                        awayPens={m.awayPens}
-                        size="sm"
-                      />
-                    ) : (
-                      <span className="text-xs text-muted-foreground">
-                        {formatTime(m.kickoff)}
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-                      <Lock className="size-3" />
-                      {phaseLocked
-                        ? "Al terminar grupos"
-                        : pred
-                          ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
-                          : "Sin pronóstico"}
-                    </span>
-                    {!matchClosed && !phaseLocked && pred ? (
-                      editRequested ? (
+                  <div className="flex flex-col items-center gap-1">
+                    {showInputs ? (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <Input
+                            name={`m_${m.id}_home`}
+                            type="number"
+                            min={0}
+                            max={99}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            defaultValue={pred?.homeScore ?? ""}
+                            className="h-11 w-14 text-center text-lg tabular-nums"
+                            aria-label="Goles local"
+                          />
+                          <span className="text-muted-foreground">–</span>
+                          <Input
+                            name={`m_${m.id}_away`}
+                            type="number"
+                            min={0}
+                            max={99}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            defaultValue={pred?.awayScore ?? ""}
+                            className="h-11 w-14 text-center text-lg tabular-nums"
+                            aria-label="Goles visitante"
+                          />
+                        </div>
                         <span className="text-xs text-muted-foreground">
-                          Edición solicitada
+                          {editApproved
+                            ? "Edición habilitada · guardá"
+                            : formatTime(m.kickoff)}
                         </span>
-                      ) : (
-                        <EditRequestButton matchId={m.id} />
-                      )
-                    ) : null}
-                  </>
-                )}
-              </div>
+                      </>
+                    ) : (
+                      <>
+                        {m.status === "finished" ? (
+                          <ScoreBox
+                            home={m.homeScore}
+                            away={m.awayScore}
+                            homePens={m.homePens}
+                            awayPens={m.awayPens}
+                            size="sm"
+                          />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {formatTime(m.kickoff)}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                          <Lock className="size-3" />
+                          {phaseLocked
+                            ? "Al terminar grupos"
+                            : pred
+                              ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
+                              : "Sin pronóstico"}
+                        </span>
+                        {!matchClosed && !phaseLocked && pred ? (
+                          editRequested ? (
+                            <span className="text-xs text-muted-foreground">
+                              Edición solicitada
+                            </span>
+                          ) : (
+                            <EditRequestButton matchId={m.id} />
+                          )
+                        ) : null}
+                      </>
+                    )}
+                  </div>
 
-              <div className="flex min-w-0 items-center justify-start">
-                <FlagName
-                  team={m.awayTeam}
-                  placeholder={m.awayPlaceholder}
-                  className="min-w-0 max-w-full"
-                />
-              </div>
-            </div>
-          );
-        })}
-      </EditorialCard>
+                  <div className="flex min-w-0 items-center justify-start">
+                    <FlagName
+                      team={m.awayTeam}
+                      placeholder={m.awayPlaceholder}
+                      className="min-w-0 max-w-full"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </EditorialCard>
+        </section>
+      ))}
 
       {anyOpen ? (
-        <div className="flex justify-end">
+        <div className="sticky bottom-4 flex justify-end">
           <SubmitButton />
         </div>
       ) : (
         <p className="text-center text-sm text-muted-foreground">
-          Todos los partidos de este día están cerrados.
+          No hay partidos abiertos para cargar.
         </p>
       )}
     </form>
