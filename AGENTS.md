@@ -127,6 +127,23 @@ The UI is mobile-first. When adding UI, keep:
   **cron-job.org** hitting `/api/cron/sync` (`*/5`) and `/api/cron/reminders` (hourly)
   with header `Authorization: Bearer <CRON_SECRET>`. `runSync` self-gates to match windows.
 
+## Two-phase model (group / knockout)
+
+Automatic phases. `src/lib/phase.ts` (pure) defines `phaseOfStage(stage)` and
+`computePhaseState(groupTotal, groupRemaining)`; `getPhaseState()` (in
+`src/lib/queries/matches.ts`) derives the live state: active phase is **group** until
+every group match is `finished`, then **knockout**.
+
+- **Gating:** knockout predictions are blocked until `groupStageComplete` —
+  `predictions-guard.isEditable(match, now, groupStageComplete)`, enforced server-side in
+  `pronosticos/actions.ts`; the day-form renders locked knockout matches as "Al terminar
+  grupos".
+- **Per-phase leaderboard:** `getLeaderboard(scope)` with `scope: "all" | "group" |
+  "knockout"` filters by stage inside the aggregate FILTERs. Tabla has tabs
+  General/Grupos/Eliminatorias (`?fase=`); Perfil shows per-phase points.
+- **Pronósticos** has Grupos/Eliminatorias tabs (`?fase=`) that filter the day list and
+  default to the active phase.
+
 ## Architecture
 
 - `src/app/(app)/` — authenticated app (tabla, pronosticos, partidos, grupos, llave,

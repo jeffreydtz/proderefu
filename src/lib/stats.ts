@@ -4,6 +4,8 @@ export interface UserStats {
   userId: string;
   displayName: string;
   totalPoints: number;
+  groupPoints: number;
+  knockoutPoints: number;
   exactHits: number;
   outcomeHits: number;
   scoredCount: number;

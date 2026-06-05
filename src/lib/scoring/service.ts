@@ -106,18 +106,30 @@ interface LeaderboardRow {
   scored_count: number;
 }
 
-export async function getLeaderboard(): Promise<RankedStanding[]> {
+export type LeaderboardScope = "all" | "group" | "knockout";
+
+export async function getLeaderboard(
+  scope: LeaderboardScope = "all",
+): Promise<RankedStanding[]> {
+  // Extra predicate appended inside every aggregate FILTER so a user with no
+  // predictions in the scope still appears (with zeros) via the LEFT JOINs.
+  const stageCond =
+    scope === "group"
+      ? sql`AND m.stage = 'group'`
+      : scope === "knockout"
+        ? sql`AND m.stage <> 'group'`
+        : sql``;
   const rows = (await db.execute(sql`
     SELECT
       u.id AS user_id,
       COALESCE(u.display_name, u.name, u.email, 'Jugador') AS display_name,
-      COALESCE(SUM(p.points_awarded), 0)::int AS points,
-      COUNT(*) FILTER (WHERE p.exact)::int AS exact_hits,
-      COUNT(*) FILTER (WHERE p.outcome_correct AND NOT p.exact)::int AS outcome_hits,
+      COALESCE(SUM(p.points_awarded) FILTER (WHERE TRUE ${stageCond}), 0)::int AS points,
+      COUNT(*) FILTER (WHERE p.exact ${stageCond})::int AS exact_hits,
+      COUNT(*) FILTER (WHERE p.outcome_correct AND NOT p.exact ${stageCond})::int AS outcome_hits,
       COALESCE(SUM(
         ABS((p.home_score - p.away_score) - (m.home_score - m.away_score))
-      ) FILTER (WHERE p.points_awarded IS NOT NULL), 0)::int AS gd_error,
-      COUNT(*) FILTER (WHERE p.points_awarded IS NOT NULL)::int AS scored_count
+      ) FILTER (WHERE p.points_awarded IS NOT NULL ${stageCond}), 0)::int AS gd_error,
+      COUNT(*) FILTER (WHERE p.points_awarded IS NOT NULL ${stageCond})::int AS scored_count
     FROM "user" u
     LEFT JOIN predictions p ON p.user_id = u.id
     LEFT JOIN matches m ON m.id = p.match_id

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { matches, predictions } from "@/db/schema";
 import { isEditable } from "@/lib/predictions-guard";
+import { getPhaseState } from "@/lib/queries/matches";
 import { requireUser } from "@/lib/session";
 
 export interface SaveResult {
@@ -48,14 +49,18 @@ export async function savePredictionsAction(
   if (wanted.length === 0) return { ok: true, saved: 0, rejected: [] };
 
   const ids = wanted.map(([id]) => id);
-  const rows = await db
-    .select({
-      id: matches.id,
-      kickoff: matches.kickoff,
-      status: matches.status,
-    })
-    .from(matches)
-    .where(inArray(matches.id, ids));
+  const [rows, phase] = await Promise.all([
+    db
+      .select({
+        id: matches.id,
+        kickoff: matches.kickoff,
+        status: matches.status,
+        stage: matches.stage,
+      })
+      .from(matches)
+      .where(inArray(matches.id, ids)),
+    getPhaseState(),
+  ]);
   const byId = new Map(rows.map((r) => [r.id, r]));
 
   const now = new Date();
@@ -63,7 +68,7 @@ export async function savePredictionsAction(
   const toUpsert: { matchId: number; home: number; away: number }[] = [];
   for (const [id, v] of wanted) {
     const match = byId.get(id);
-    if (!match || !isEditable(match, now)) {
+    if (!match || !isEditable(match, now, phase.groupStageComplete)) {
       rejected.push(id);
       continue;
     }

@@ -10,6 +10,7 @@ import { EditorialCard } from "@/components/retro/editorial-card";
 import { FlagName } from "@/components/retro/flag-name";
 import { ScoreBox } from "@/components/retro/score-box";
 import { formatTime, isLocked } from "@/lib/format";
+import { phaseOfStage } from "@/lib/phase";
 import type { MatchWithTeams } from "@/lib/queries/matches";
 import { savePredictionsAction, type SaveResult } from "./actions";
 
@@ -27,9 +28,11 @@ function SubmitButton() {
 export function PronosticosDayForm({
   matches,
   predictions,
+  groupStageComplete,
 }: {
   matches: MatchWithTeams[];
   predictions: PredMap;
+  groupStageComplete: boolean;
 }) {
   const [state, formAction] = useActionState<SaveResult | null, FormData>(
     savePredictionsAction,
@@ -50,13 +53,20 @@ export function PronosticosDayForm({
       toast.info("No había cambios para guardar.");
   }, [state]);
 
-  const anyOpen = matches.some((m) => !isLocked(m.kickoff, m.status));
+  const isPhaseLocked = (m: MatchWithTeams) =>
+    m.status === "scheduled" &&
+    phaseOfStage(m.stage) !== "group" &&
+    !groupStageComplete;
+  const anyOpen = matches.some(
+    (m) => !isLocked(m.kickoff, m.status) && !isPhaseLocked(m),
+  );
 
   return (
     <form action={formAction} className="space-y-3">
       <EditorialCard className="divide-y divide-border">
         {matches.map((m) => {
-          const locked = isLocked(m.kickoff, m.status);
+          const phaseLocked = isPhaseLocked(m);
+          const locked = isLocked(m.kickoff, m.status) || phaseLocked;
           const pred = predictions[m.id];
           return (
             <div
@@ -89,9 +99,11 @@ export function PronosticosDayForm({
                     )}
                     <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                       <Lock className="size-3" />
-                      {pred
-                        ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
-                        : "Sin pronóstico"}
+                      {phaseLocked
+                        ? "Al terminar grupos"
+                        : pred
+                          ? `Tu pron.: ${pred.homeScore}-${pred.awayScore}`
+                          : "Sin pronóstico"}
                     </span>
                   </>
                 ) : (

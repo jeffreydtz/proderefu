@@ -1,9 +1,10 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { matches } from "@/db/schema";
 import type { Match, Stage, Team } from "@/db/schema";
 import { dayKey, formatDayHeading } from "@/lib/format";
+import { computePhaseState, type PhaseState } from "@/lib/phase";
 
 export type MatchWithTeams = Match & {
   homeTeam: Team | null;
@@ -71,4 +72,19 @@ export async function getMatchesForStage(
     with: { homeTeam: true, awayTeam: true },
     orderBy: [asc(matches.kickoff)],
   });
+}
+
+/**
+ * Current tournament phase, derived from group-match completion. Automatic:
+ * group stage until every group match is finished, then knockout.
+ */
+export async function getPhaseState(): Promise<PhaseState> {
+  const rows = (await db.execute(sql`
+    SELECT
+      COUNT(*) FILTER (WHERE stage = 'group')::int AS group_total,
+      COUNT(*) FILTER (WHERE stage = 'group' AND status <> 'finished')::int AS group_remaining
+    FROM matches
+  `)) as unknown as { group_total: number; group_remaining: number }[];
+  const r = rows[0] ?? { group_total: 0, group_remaining: 0 };
+  return computePhaseState(r.group_total, r.group_remaining);
 }

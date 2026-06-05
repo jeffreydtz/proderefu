@@ -12,6 +12,18 @@ describe("isEditable", () => {
     expect(isEditable({ status: "live", kickoff: future }, now)).toBe(false);
     expect(isEditable({ status: "finished", kickoff: future }, now)).toBe(false);
   });
+
+  it("gates knockout matches until the group stage is complete", () => {
+    const ko = { status: "scheduled" as const, kickoff: future, stage: "quarter" as const };
+    const grp = { status: "scheduled" as const, kickoff: future, stage: "group" as const };
+    // group stage NOT complete
+    expect(isEditable(ko, now, false)).toBe(false);
+    expect(isEditable(grp, now, false)).toBe(true);
+    // group stage complete
+    expect(isEditable(ko, now, true)).toBe(true);
+    // a started knockout match is still locked even once groups are done
+    expect(isEditable({ ...ko, kickoff: past }, now, true)).toBe(false);
+  });
 });
 
 describe("assertEditable", () => {

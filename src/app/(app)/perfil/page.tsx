@@ -18,6 +18,8 @@ export default async function PerfilPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <StatTile label="Puntos" value={s.totalPoints} accent />
+        <StatTile label="Pts grupos" value={s.groupPoints} />
+        <StatTile label="Pts elim." value={s.knockoutPoints} />
         <StatTile label="Posición" value={ordinalRank(s.rank, s.tied)} />
         <StatTile label="Racha" value={s.currentStreak} />
         <StatTile label="Exactos" value={s.exactHits} />

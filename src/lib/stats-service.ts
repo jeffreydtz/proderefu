@@ -11,8 +11,14 @@ import {
 } from "@/lib/stats";
 
 export async function getUserStats(userId: string): Promise<UserStats> {
-  const board = await getLeaderboard();
+  const [board, groupBoard, koBoard] = await Promise.all([
+    getLeaderboard(),
+    getLeaderboard("group"),
+    getLeaderboard("knockout"),
+  ]);
   const me = board.find((r) => r.userId === userId);
+  const groupPoints = groupBoard.find((r) => r.userId === userId)?.points ?? 0;
+  const knockoutPoints = koBoard.find((r) => r.userId === userId)?.points ?? 0;
 
   const poolAvgPoints =
     board.length > 0
@@ -33,6 +39,8 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     userId,
     displayName: me?.displayName ?? "Jugador",
     totalPoints,
+    groupPoints,
+    knockoutPoints,
     exactHits,
     outcomeHits,
     scoredCount,
